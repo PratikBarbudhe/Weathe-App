@@ -1,57 +1,52 @@
-import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+import React,{useState,useEffect}from 'react'
+import axios from "axios"
 import "./Home.css"
+import NewsArticle from '../../Components/NewsArticle'
 
-function Home() {
+function Home(){
+    const [news,setNews]=useState([])
+    const [searchQuery,setSearchQuery]=useState("pune")
 
-    const [city, setCity] = useState('')
-    const [temprature, setTemprature] = useState(0)
-    const [humidity, setHumidity] = useState('')
-    const [message, setMessage] = useState('')
-
-    async function loadWeatherInfo() {
-        try {
-            const response = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=16691c34fcdf56070185da6b2b944c91`)
-
-            setTemprature((response.data.main.temp - 273).toFixed(2))
-            setHumidity(response.data.main.humidity);
-            setMessage('')
-        }
-        catch (err) {
-            setTemprature(0)
-            setMessage('City Not Found ?')
-        }
-    }
-
-
-    useEffect(() => {
-        loadWeatherInfo()
-    }, [{ city }])
-
-    return (
-        <div>
-            <h1 className='app-title'>Weather Forecast</h1>
-
-            <input
-                type="text"
-                className='search-bar'
-                placeholder="Search Location.."
-                value={city}
-                onChange={(e) => {
-                    setCity(e.target.value)
-                }}
-            />
-            <p className='message-alert'>{message}</p>
-
-            <div className='weather-info'>
-                <h3 className='city-name'>{city} {"  "} </h3>
-                <span className='city-temp'> {temprature} °C</span>
-
-            </div>
-
-
-        </div>
-    )
+    const loadNews=async() =>{
+try{
+    const response=await axios.get(`https://newsapi.org/v2/everything?q=${searchQuery}&from=2023-10-18&to=2023-10-18&sortBy=popularity&apiKey=${process.env.REACT_APP_API_KEY}`);
+   
+    setNews(response.data.articles)
 }
+
+catch(error){
+    console.log(error)
+}
+}
+    useEffect(() =>{
+        loadNews()
+    },[])
+
+    useEffect(()=>{
+        loadNews()
+    },[searchQuery])
+return (
+    <div>
+        <h1>News App</h1>
+        <input 
+         type="text"
+         className="search-input"
+         value={searchQuery}
+         onChange={(e)=>{
+          setSearchQuery(e.target.value)
+          }}/>
+    <div className="news-container">
+    {
+        news.map((newsArticle,index)=>{
+            const {author,title,description,url,urlToImage,publishedAt}=newsArticle
+
+            return(
+               <NewsArticle author={author} title={title} description={description} url={url}
+               urlToImage={urlToImage} publishedAt={publishedAt}  key={index}/>
+            )
+        })
+    }
+    </div>
+</div>)}
 
 export default Home
